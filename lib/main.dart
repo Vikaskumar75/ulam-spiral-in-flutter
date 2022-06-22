@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_web_libraries_in_flutter
 
 import 'dart:html';
+
 import 'package:flutter/material.dart';
 
 void main() {
@@ -28,7 +29,24 @@ class UlamSpiral extends StatefulWidget {
   State<UlamSpiral> createState() => _UlamSpiralState();
 }
 
-class _UlamSpiralState extends State<UlamSpiral> {
+class _UlamSpiralState extends State<UlamSpiral> with TickerProviderStateMixin {
+  final int noOfIterations = 5000;
+
+  late AnimationController controller;
+  late Animation animation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 10000),
+    );
+    animation = IntTween(begin: 0, end: noOfIterations).animate(controller);
+    controller.forward();
+  }
+
   bool isFullScreen = false;
   @override
   Widget build(BuildContext context) {
@@ -41,7 +59,7 @@ class _UlamSpiralState extends State<UlamSpiral> {
               height: MediaQuery.of(context).size.height,
               width: MediaQuery.of(context).size.width,
             ),
-            foregroundPainter: UlamCustomPainter(),
+            foregroundPainter: UlamCustomPainter(animation: animation),
           ),
           Align(
             alignment: const Alignment(0.95, -0.95),
@@ -68,13 +86,17 @@ class _UlamSpiralState extends State<UlamSpiral> {
 }
 
 class UlamCustomPainter extends CustomPainter {
+  final Animation animation;
+  const UlamCustomPainter({
+    required this.animation,
+  }) : super(repaint: animation);
+
   @override
   void paint(Canvas canvas, Size size) {
     Paint paint = Paint()
       ..color = Colors.white
       ..strokeWidth = 0.4;
 
-    const int numberOfIterations = 5000;
     const int step = 10;
     const double radius = 3;
     int noOfStepsTaken = 0;
@@ -91,7 +113,7 @@ class UlamCustomPainter extends CustomPainter {
       size.height / 2,
     );
 
-    for (int i = 0; i < numberOfIterations; i++) {
+    for (int i = 0; i < animation.value; i++) {
       if (isPrime(i + 1)) {
         canvas.drawCircle(startingOffset, radius, paint);
       }
@@ -148,7 +170,7 @@ class UlamCustomPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(UlamCustomPainter oldDelegate) => false;
+  bool shouldRepaint(UlamCustomPainter oldDelegate) => true;
 
   @override
   bool shouldRebuildSemantics(UlamCustomPainter oldDelegate) => false;
